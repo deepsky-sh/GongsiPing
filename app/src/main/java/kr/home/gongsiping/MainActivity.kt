@@ -31,6 +31,7 @@ import kr.home.gongsiping.data.Repo
 import kr.home.gongsiping.data.Store
 import kr.home.gongsiping.ui.AppTheme
 import kr.home.gongsiping.ui.DetailScreen
+import kr.home.gongsiping.ui.ExportScreen
 import kr.home.gongsiping.ui.HomeScreen
 import kr.home.gongsiping.ui.LocalPalette
 import kr.home.gongsiping.ui.SearchScreen
@@ -41,6 +42,7 @@ sealed interface Screen {
     data object Home : Screen
     data object Search : Screen
     data object Settings : Screen
+    data class Export(val aptId: String?) : Screen
     data class Detail(val id: String) : Screen
 }
 
@@ -97,7 +99,8 @@ class MainActivity : ComponentActivity() {
                             onOpen = { screen = Screen.Detail(it.id) },
                             onAdd = { screen = Screen.Search },
                             onDemo = { Store.upsert(applicationContext, Demo.apt()) },
-                            onSettings = { screen = Screen.Settings }
+                            onSettings = { screen = Screen.Settings },
+                            onExport = { screen = Screen.Export(null) }
                         )
 
                         Screen.Search -> SearchScreen(
@@ -108,6 +111,13 @@ class MainActivity : ComponentActivity() {
                                 CheckWorker.runNow(applicationContext) // 실거래 기준점 잡기
                                 screen = Screen.Detail(apt.id)
                             }
+                        )
+
+                        is Screen.Export -> ExportScreen(
+                            repo = repo,
+                            apts = apts,
+                            initialId = s.aptId,
+                            onBack = { screen = if (s.aptId != null) Screen.Detail(s.aptId) else Screen.Home }
                         )
 
                         Screen.Settings -> SettingsScreen(
@@ -125,7 +135,8 @@ class MainActivity : ComponentActivity() {
                                     repo = repo,
                                     apt = apt,
                                     onBack = { screen = Screen.Home },
-                                    onDeleted = { screen = Screen.Home }
+                                    onDeleted = { screen = Screen.Home },
+                                    onExport = { screen = Screen.Export(apt.id) }
                                 )
                             }
                         }

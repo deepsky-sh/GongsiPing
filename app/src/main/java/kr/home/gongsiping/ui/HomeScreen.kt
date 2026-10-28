@@ -33,13 +33,18 @@ fun HomeScreen(
     onOpen: (Apt) -> Unit,
     onAdd: () -> Unit,
     onDemo: () -> Unit,
-    onSettings: () -> Unit
+    onSettings: () -> Unit,
+    onExport: () -> Unit
 ) {
     val p = LocalPalette.current
     Column(Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
         // 상단 줄
         Row(Modifier.fillMaxWidth().padding(top = 18.dp, bottom = 6.dp), verticalAlignment = Alignment.CenterVertically) {
             T("공시핑", Type.bodyBold, Modifier.weight(1f))
+            if (apts.any { !it.demo }) {
+                LinkText("엑셀", onExport)
+                Spacer(Modifier.width(18.dp))
+            }
             LinkText("설정", onSettings)
         }
 
