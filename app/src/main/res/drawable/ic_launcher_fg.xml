@@ -1,0 +1,19 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- 굵은 꺾은선(가격 추이) + 끝점 라임 -->
+    <path
+        android:strokeColor="#FF141414"
+        android:strokeWidth="7"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="#00000000"
+        android:pathData="M32,70 L46,58 L56,64 L74,42" />
+    <path
+        android:fillColor="#FFC6F432"
+        android:strokeColor="#FF141414"
+        android:strokeWidth="4"
+        android:pathData="M74,42m-8,0a8,8 0,1 1,16 0a8,8 0,1 1,-16 0" />
+</vector>
