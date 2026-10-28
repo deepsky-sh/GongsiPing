@@ -2,10 +2,10 @@
 
 ## 📲 APK 다운로드
 
-**[⬇ 공시핑 최신 버전 받기 (GongsiPing.apk)](https://github.com/deepsky-sh/GongsiPing/releases/latest/download/GongsiPing.apk)**
+**[⬇ 공시핑 최신 버전 받기 (GongsiPing.apk)](https://github.com/deepsky-sh/GongsiPing/raw/main/apk/GongsiPing.apk)**
 
 폰에서 위 링크를 누르면 바로 받아져요. 설치할 때 "출처를 알 수 없는 앱" 허용이 필요할 수 있어요.
-인증키 없이 바로 쓸 수 있습니다.
+인증키 없이 바로 쓸 수 있습니다. (현재 버전 1.1 · 디버그 서명)
 
 찜한 아파트의 **새 공시가격 발표**와 **우리 동네 실거래 신고**를 푸시로 알려주고,
 10년 가격 흐름과 주변 단지 ㎡당 공시가격 순위를 보여주는 앱.
