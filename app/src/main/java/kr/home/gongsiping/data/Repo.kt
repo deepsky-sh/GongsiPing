@@ -6,7 +6,6 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
-import kotlinx.coroutines.withTimeoutOrNull
 import java.util.Calendar
 import java.util.UUID
 import kotlin.math.abs
@@ -112,26 +111,6 @@ class Repo(private val ctx: Context) {
         )
     }
 
-    /**
-     * 단지 전체 동·호 공시가격을 모아 내 세대 순위(몇 세대 중 몇 등, 최고·최저 세대)를 계산해 저장.
-     * 모은 표는 엑셀 내보내기에서 다시 쓰도록 돌려준다.
-     */
-    suspend fun refreshRank(apt: Apt, onProgress: (done: Int, total: Int) -> Unit = { _, _ -> }): UnitTable? {
-        if (apt.demo || !apt.usable) return null
-        val table = Export.collect(api, apt) { d, n, phase ->
-            if (phase.startsWith("세대별")) onProgress(d, n)
-        }
-        applyRank(apt.id, table)
-        return table
-    }
-
-    /** 이미 모아둔 단지 표(엑셀 내보내기 등)로 순위만 다시 계산 */
-    fun applyRank(aptId: String, table: UnitTable) {
-        val cur = Store.get(ctx, aptId) ?: return
-        val r = Ranking.compute(cur, table) ?: return
-        Store.update(ctx, aptId) { it.copy(rank = r) }
-    }
-
     /** 같은 법정동의 최근 2개월 실거래 (최신순) */
     suspend fun recentTrades(apt: Apt): List<Trade> {
         if (apt.demo) return Demo.trades()
@@ -207,18 +186,10 @@ class Repo(private val ctx: Context) {
                     if (newest != null && newest.year > before) {
                         val rate = updated.changeRate
                         val diff = if (rate.isNaN()) "" else " · 작년보다 ${Fmt.rate(rate)}"
-                        // 새 연도 기준 단지 내 순위 (실패해도 알림은 보낸다)
-                        val rank = try {
-                            withTimeoutOrNull(6 * 60_000L) { refreshRank(updated) }
-                            Store.get(ctx, apt.id)?.rank?.takeIf { it.year == newest.year }
-                        } catch (e: Exception) {
-                            null
-                        }
-                        val rankText = rank?.let { " · ${it.total}세대 중 ${it.rank}등" } ?: ""
                         alerts += Alert(
                             apt.id,
                             "${apt.title} ${apt.dong}동 공시가격 나왔어요",
-                            "${newest.year} 공시가 ${Fmt.won(newest.price)}$diff$rankText"
+                            "${newest.year} 공시가 ${Fmt.won(newest.price)}$diff"
                         )
                     }
                 }

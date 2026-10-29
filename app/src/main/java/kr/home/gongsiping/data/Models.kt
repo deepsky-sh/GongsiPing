@@ -54,7 +54,6 @@ data class Apt(
     val nearbyUpdated: Long = 0L,
     val seenTrades: Set<String> = emptySet(),
     val tradesSeeded: Boolean = false,
-    val rank: UnitRank? = null, // 단지 전체 세대 중 순위 (없으면 아직 계산 전)
     val demo: Boolean = false
 ) {
     val title: String get() = nickname.ifBlank { complexName }
@@ -70,8 +69,6 @@ data class Apt(
         return (l.price - p.price) * 100.0 / p.price
     }
     val lawdCode: String get() = regCode
-    /** 순위를 (다시) 계산해야 하는지: 아직 없거나, 더 새 연도 공시가 나왔으면 */
-    val rankStale: Boolean get() = !demo && usable && (rank == null || rank.year < (latest?.year ?: 0))
     val usable: Boolean get() = aptCode.isNotBlank() && noticeDate.isNotBlank()
 }
 
@@ -100,31 +97,3 @@ data class PriceRow(
     val complexName: String,
     val bjdName: String
 )
-
-/** 단지 안 한 세대의 공시가격 */
-data class UnitPrice(val dong: String, val ho: String, val price: Long, val area: Double) {
-    val label: String get() = "${dong}동 ${ho}호"
-}
-
-/** 단지 전체 세대 중 내 세대의 순위 (공시가격 높은 순) */
-data class UnitRank(
-    val year: Int,          // 기준 공시 연도
-    val rank: Int,          // 1 = 가장 비쌈. 같은 가격은 같은 등수
-    val ties: Int,          // 나와 같은 가격인 세대 수 (나 포함)
-    val total: Int,         // 비교한 세대 수 (나 포함)
-    val myPrice: Long,
-    val top: UnitPrice,     // 최고가 세대
-    val topTies: Int,       // 최고가와 같은 가격 세대 수
-    val bottom: UnitPrice,  // 최저가 세대
-    val bottomTies: Int,
-    val areaRank: Int,      // 같은 전용면적 안에서 순위 (0 = 계산 못 함)
-    val areaTotal: Int,
-    val missing: Int,       // 못 받아온 세대 수
-    val updated: Long
-) {
-    /** 상위 몇 % (1~100) */
-    val topPercent: Int get() = if (total <= 0) 0 else Math.ceil(rank * 100.0 / total).toInt().coerceIn(1, 100)
-    /** 0 = 최저, 1 = 최고 */
-    val position: Float get() =
-        if (top.price <= bottom.price) 0.5f else ((myPrice - bottom.price).toFloat() / (top.price - bottom.price)).coerceIn(0f, 1f)
-}

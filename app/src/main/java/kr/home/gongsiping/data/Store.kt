@@ -88,34 +88,7 @@ object Store {
         put("nearbyUpdated", a.nearbyUpdated)
         put("seen", JSONArray().apply { a.seenTrades.forEach { put(it) } })
         put("seeded", a.tradesSeeded)
-        a.rank?.let { put("rank", rankJson(it)) }
         put("demo", a.demo)
-    }
-
-    private fun unitJson(u: UnitPrice) =
-        JSONObject().put("d", u.dong).put("h", u.ho).put("p", u.price).put("a", u.area)
-
-    private fun unitFrom(o: JSONObject) =
-        UnitPrice(o.optString("d"), o.optString("h"), o.optLong("p"), o.optDouble("a", 0.0))
-
-    private fun rankJson(r: UnitRank) = JSONObject().apply {
-        put("year", r.year); put("rank", r.rank); put("ties", r.ties); put("total", r.total)
-        put("my", r.myPrice); put("top", unitJson(r.top)); put("topTies", r.topTies)
-        put("bottom", unitJson(r.bottom)); put("bottomTies", r.bottomTies)
-        put("areaRank", r.areaRank); put("areaTotal", r.areaTotal)
-        put("missing", r.missing); put("updated", r.updated)
-    }
-
-    private fun rankFrom(o: JSONObject): UnitRank? = try {
-        UnitRank(
-            year = o.getInt("year"), rank = o.getInt("rank"), ties = o.optInt("ties", 1), total = o.getInt("total"),
-            myPrice = o.getLong("my"), top = unitFrom(o.getJSONObject("top")), topTies = o.optInt("topTies", 1),
-            bottom = unitFrom(o.getJSONObject("bottom")), bottomTies = o.optInt("bottomTies", 1),
-            areaRank = o.optInt("areaRank"), areaTotal = o.optInt("areaTotal"),
-            missing = o.optInt("missing"), updated = o.optLong("updated")
-        )
-    } catch (e: Exception) {
-        null
     }
 
     private fun fromJson(o: JSONObject): Apt {
@@ -154,7 +127,6 @@ object Store {
             nearbyUpdated = o.optLong("nearbyUpdated"),
             seenTrades = seen,
             tradesSeeded = o.optBoolean("seeded"),
-            rank = o.optJSONObject("rank")?.let { rankFrom(it) },
             demo = o.optBoolean("demo")
         )
     }

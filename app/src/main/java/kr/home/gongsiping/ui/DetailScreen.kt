@@ -37,7 +37,7 @@ import java.util.Date
 import java.util.Locale
 
 @Composable
-fun DetailScreen(repo: Repo, apt: Apt, onBack: () -> Unit, onDeleted: () -> Unit, onExport: () -> Unit) {
+fun DetailScreen(repo: Repo, apt: Apt, onBack: () -> Unit, onDeleted: () -> Unit) {
     val p = LocalPalette.current
     val ctx = androidx.compose.ui.platform.LocalContext.current
     val scope = rememberCoroutineScope()
@@ -90,10 +90,6 @@ fun DetailScreen(repo: Repo, apt: Apt, onBack: () -> Unit, onDeleted: () -> Unit
             Row(Modifier.fillMaxWidth().padding(top = 18.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                 LinkText("← 목록", onBack)
                 Spacer(Modifier.weight(1f))
-                if (!apt.demo) {
-                    LinkText("엑셀", onExport, color = p.sub)
-                    Spacer(Modifier.width(16.dp))
-                }
                 LinkText("별명", { showRename = true }, color = p.sub)
                 Spacer(Modifier.width(16.dp))
                 LinkText("삭제", { showDelete = true }, color = p.sub)
