@@ -14,12 +14,20 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kr.home.gongsiping.ads.BannerAd
 import kr.home.gongsiping.data.Apt
 import kr.home.gongsiping.data.Fmt
+import kr.home.gongsiping.data.RankRunner
 import kr.home.gongsiping.work.CheckWorker
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -38,6 +46,12 @@ fun HomeScreen(
     onExport: () -> Unit
 ) {
     val p = LocalPalette.current
+    val ctx = LocalContext.current
+    val rankStates by RankRunner.state.collectAsState()
+    var rankId by rememberSaveable { mutableStateOf<String?>(null) }
+    // 순위가 없거나 새 공시가가 나온 세대는 알아서 센다 (한 번에 한 단지씩)
+    LaunchedEffect(apts) { apts.filter { it.rankStale }.forEach { RankRunner.ensure(ctx, it) } }
+
     Column(Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
         // 상단 줄
         Row(Modifier.fillMaxWidth().padding(top = 18.dp, bottom = 6.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -56,7 +70,16 @@ fun HomeScreen(
 
         LazyColumn(Modifier.weight(1f)) {
             item {
-                Spacer(Modifier.height(18.dp))
+                RankSection(
+                    apts = apts,
+                    selectedId = rankId,
+                    onSelect = { rankId = it },
+                    states = rankStates,
+                    onRetry = { RankRunner.ensure(ctx, it, force = true) },
+                    onOpen = onOpen
+                )
+            }
+            item {
                 Row(verticalAlignment = Alignment.Bottom) {
                     T("찜한 집 ", Type.big)
                     Marker("${apts.size}곳", Type.big)

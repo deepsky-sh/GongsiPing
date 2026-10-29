@@ -29,6 +29,12 @@ object Demo {
             ).sortedByDescending { it.perSqm },
             nearbyUpdated = System.currentTimeMillis(),
             tradesSeeded = true,
+            rank = UnitRank(
+                year = y, rank = 87, ties = 2, total = 512, myPrice = 421_000_000,
+                top = UnitPrice("108", "2501", 598_000_000, 114.8), topTies = 1,
+                bottom = UnitPrice("101", "101", 321_000_000, 59.9), bottomTies = 3,
+                areaRank = 41, areaTotal = 240, missing = 0, updated = System.currentTimeMillis()
+            ),
             demo = true
         )
     }

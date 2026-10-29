@@ -40,6 +40,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kr.home.gongsiping.data.Apt
 import kr.home.gongsiping.data.Export
+import kr.home.gongsiping.data.RankRunner
 import kr.home.gongsiping.data.Repo
 import kr.home.gongsiping.data.UnitTable
 import kr.home.gongsiping.data.Xlsx
@@ -58,7 +59,8 @@ fun ExportScreen(repo: Repo, apts: List<Apt>, initialId: String?, onBack: () -> 
 
     var aptId by remember { mutableStateOf(initialId?.takeIf { id -> usable.any { it.id == id } } ?: usable.firstOrNull()?.id) }
     var year by remember { mutableStateOf<Int?>(null) } // null = 전체 연도
-    val tables = remember { mutableStateMapOf<String, UnitTable>() } // 한 번 모은 건 다시 안 받음
+    // 한 번 모은 건 다시 안 받음 (단지 내 순위 계산 때 모아둔 것도 그대로 씀)
+    val tables = remember { mutableStateMapOf<String, UnitTable>().apply { putAll(RankRunner.tables) } }
     var job by remember { mutableStateOf<Job?>(null) }
     var phase by remember { mutableStateOf("") }
     var done by remember { mutableIntStateOf(0) }
@@ -106,6 +108,8 @@ fun ExportScreen(repo: Repo, apts: List<Apt>, initialId: String?, onBack: () -> 
             try {
                 val t = Export.collect(repo.api, a) { d, n, ph -> done = d; total = n; phase = ph }
                 tables[a.id] = t
+                RankRunner.tables[a.id] = t
+                repo.applyRank(a.id, t) // 모은 김에 단지 내 순위도 갱신
                 phase = ""
                 saver.launch(Export.fileName(t, year))
             } catch (e: kotlinx.coroutines.CancellationException) {

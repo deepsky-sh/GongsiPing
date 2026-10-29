@@ -28,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
 import kr.home.gongsiping.ads.Ads
 import kr.home.gongsiping.data.Demo
+import kr.home.gongsiping.data.RankRunner
 import kr.home.gongsiping.data.Repo
 import kr.home.gongsiping.data.Store
 import kr.home.gongsiping.ui.AppTheme
@@ -111,6 +112,7 @@ class MainActivity : ComponentActivity() {
                             onPicked = { c, dong, ho ->
                                 val apt = repo.addApt(c, dong, ho)
                                 CheckWorker.runNow(applicationContext) // 실거래 기준점 잡기
+                                RankRunner.ensure(applicationContext, apt) // 단지 안 순위 세기 시작
                                 screen = Screen.Detail(apt.id)
                             }
                         )
