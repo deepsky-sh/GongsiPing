@@ -26,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import kr.home.gongsiping.ads.BannerAd
 import kr.home.gongsiping.data.Apt
 import kr.home.gongsiping.data.Fmt
 import kr.home.gongsiping.data.Repo
@@ -83,7 +84,8 @@ fun DetailScreen(repo: Repo, apt: Apt, onBack: () -> Unit, onDeleted: () -> Unit
     val latest = apt.latest
     val prev = apt.previous
 
-    LazyColumn(Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
+    Column(Modifier.fillMaxSize()) {
+    LazyColumn(Modifier.weight(1f).padding(horizontal = 20.dp)) {
         item {
             Row(Modifier.fillMaxWidth().padding(top = 18.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                 LinkText("← 목록", onBack)
@@ -231,6 +233,8 @@ fun DetailScreen(repo: Repo, apt: Apt, onBack: () -> Unit, onDeleted: () -> Unit
             }
             Spacer(Modifier.height(40.dp))
         }
+    }
+    BannerAd()
     }
 
     if (showRename) {

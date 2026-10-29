@@ -5,7 +5,7 @@
 **[⬇ 공시핑 최신 버전 받기 (GongsiPing.apk)](https://github.com/deepsky-sh/GongsiPing/raw/main/apk/GongsiPing.apk)**
 
 폰에서 위 링크를 누르면 바로 받아져요. 설치할 때 "출처를 알 수 없는 앱" 허용이 필요할 수 있어요.
-인증키 없이 바로 쓸 수 있습니다. (현재 버전 1.2 · 디버그 서명)
+인증키 없이 바로 쓸 수 있습니다. (현재 버전 1.2 · 디버그 서명 · 1.3은 Play 스토어 출시 준비 중)
 
 찜한 아파트의 **새 공시가격 발표**와 **우리 동네 실거래 신고**를 푸시로 알려주고,
 10년 가격 흐름과 주변 단지 ㎡당 공시가격 순위를 보여주는 앱.
@@ -17,6 +17,15 @@
 
 동네 **실거래 알림만** 선택 기능입니다. 원하면 공공데이터포털(data.go.kr)에서
 "국토교통부_아파트 매매 실거래가 자료"를 활용신청하고 일반 인증키(Decoding)를 앱 설정에 넣으세요.
+
+## 광고 (AdMob)
+
+- 홈·아파트 화면 맨 아래 **적응형 하단 배너** 1개만 (전면 광고 없음).
+- AdMob 앱 ID · 배너 광고 단위 ID 는 `app/build.gradle` 맨 위 `ADMOB` 블록에 들어 있습니다.
+- 유럽 등 동의가 필요한 지역은 Google UMP 동의 창을 먼저 띄우고, 설정에 `광고 개인정보 설정`이 생깁니다.
+- **내 폰에서 내 광고를 누르지 마세요** (AdMob 계정 정지 사유).
+- 새 광고 단위는 실제 광고가 나오기까지 몇 시간~하루 걸릴 수 있어요.
+- Play 스토어에 올릴 때는 `app-ads.txt` 등록, 앱 콘텐츠의 "광고 포함" 체크가 필요합니다.
 
 ## 2. 빌드
 
@@ -36,7 +45,7 @@
 - 데이터는 폰 내부 파일(`apts.json`)에만 저장.
 - **엑셀 내보내기:** 홈 또는 아파트 화면의 `엑셀` → 단지 선택 → **전체 연도** 또는 **개별 연도** 선택 → 저장.
   단지의 모든 동·호 공시가격을 공시가격 알리미에서 받아(동시 4건) `.xlsx`로 만듭니다.
-  - 전체 연도: 동·호마다 연도별 공시가격이 가로로, 최근 전년대비·10년 변화(%)
+  - 전체 연도: 동·호마다 연도별 공시가격이 가로로, 최근 전년대비·첫해 대비(%)
   - 개별 연도: 그해 공시가격·㎡당·전년 공시가격·전년대비(원/%)
   - 함께 들어가는 시트: `요약`(연도별 세대 수·평균·중앙값·최저·최고·㎡당 중앙값), `정보`(주소·기준일·출처)
   - 한 번 모은 단지는 연도만 바꿔 바로 다시 저장. 저장 후 카톡·메일로 공유 가능.
@@ -54,6 +63,7 @@ app/src/main/java/kr/home/gongsiping/
   data/Export.kt         전체 동·호 수집 + 엑셀 시트 구성
   data/Xlsx.kt           라이브러리 없는 .xlsx 작성기
   work/CheckWorker.kt    12시간 주기 확인 + 푸시
+  ads/Ads.kt             AdMob 하단 배너, UMP 동의
   ui/Theme.kt            색 5개(종이·먹·회색·라임) + 글자 크기
   ui/Components.kt       형광펜 강조, 상승 태그, 꺾은선, 막대
   ui/HomeScreen.kt / SearchScreen.kt / DetailScreen.kt / SettingsScreen.kt / ExportScreen.kt
@@ -67,6 +77,10 @@ app/src/main/java/kr/home/gongsiping/
 **Pretendard 글꼴(선택):** `Pretendard-Regular/Bold/ExtraBold/Black.otf` 를
 `app/src/main/res/font/` 에 소문자 이름(`pretendard_regular.otf` 등)으로 넣고,
 `ui/Theme.kt` 의 `FontFamily.Default` 를 `FontFamily(Font(R.font.pretendard_regular), ...)` 로 바꾸면 됩니다.
+
+## 개인정보처리방침
+
+[PRIVACY.md](PRIVACY.md)
 
 ## 6. 알아둘 점
 

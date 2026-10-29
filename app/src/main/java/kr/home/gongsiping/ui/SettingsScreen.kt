@@ -21,6 +21,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import kr.home.gongsiping.BuildConfig
+import kr.home.gongsiping.ads.Ads
 import kr.home.gongsiping.data.Prefs
 import kr.home.gongsiping.work.CheckWorker
 
@@ -81,8 +83,12 @@ fun SettingsScreen(prefs: Prefs, onBack: () -> Unit, onTheme: (Int) -> Unit) {
         Segmented(listOf("시스템", "밝게", "어둡게"), theme, {
             theme = it; prefs.themeMode = it; onTheme(it)
         })
+        if (Ads.privacyOptionsRequired.value) {
+            Spacer(Modifier.height(24.dp))
+            LinkText("광고 개인정보 설정", { (ctx as? android.app.Activity)?.let { Ads.showPrivacyOptions(it) } }, color = p.sub)
+        }
         Spacer(Modifier.height(48.dp))
-        T("공시핑 1.0 · 데이터는 폰 안에만 저장돼요.", Type.small, color = p.sub)
+        T("공시핑 ${BuildConfig.VERSION_NAME} · 데이터는 폰 안에만 저장돼요. 광고로 무료 운영해요.", Type.small, color = p.sub)
         Spacer(Modifier.height(40.dp))
     }
 }

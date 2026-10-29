@@ -26,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
+import kr.home.gongsiping.ads.Ads
 import kr.home.gongsiping.data.Demo
 import kr.home.gongsiping.data.Repo
 import kr.home.gongsiping.data.Store
@@ -57,6 +58,7 @@ class MainActivity : ComponentActivity() {
         Store.load(applicationContext)
         CheckWorker.createChannels(this)
         CheckWorker.schedule(this)
+        Ads.start(this)
         openFromNotification = intent?.getStringExtra(CheckWorker.EXTRA_APT)
 
         setContent {

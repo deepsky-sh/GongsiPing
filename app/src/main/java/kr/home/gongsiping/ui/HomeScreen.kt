@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import kr.home.gongsiping.ads.BannerAd
 import kr.home.gongsiping.data.Apt
 import kr.home.gongsiping.data.Fmt
 import kr.home.gongsiping.work.CheckWorker
@@ -63,6 +64,9 @@ fun HomeScreen(
                 Spacer(Modifier.height(10.dp))
                 T(seasonLine(), Type.small, color = p.sub)
                 T(checkLine(lastCheck, lastCheckOk), Type.small, color = p.sub)
+                Spacer(Modifier.height(18.dp))
+                // 추가 버튼은 위쪽에 둔다 (하단 광고 바로 옆에 버튼을 두지 않기 — AdMob 실수 클릭 정책)
+                InkButton("+ 아파트 추가", onAdd)
                 Spacer(Modifier.height(22.dp))
                 Hairline(strong = true)
             }
@@ -72,7 +76,7 @@ fun HomeScreen(
             }
             item { Spacer(Modifier.height(24.dp)) }
         }
-        InkButton("+ 아파트 추가", onAdd, Modifier.padding(bottom = 16.dp))
+        BannerAd()
     }
 }
 
@@ -114,11 +118,14 @@ private fun Empty(onAdd: () -> Unit, onDemo: () -> Unit) {
         T("이 없어요.", Type.mega)
         Spacer(Modifier.height(20.dp))
         T("아파트 하나 골라두면\n새 공시가격이 뜨는 날 바로 알려줄게요.\n동네에 실거래 신고 들어와도요.", Type.body, color = p.sub)
-        Spacer(Modifier.weight(1f))
+        Spacer(Modifier.height(32.dp))
         InkButton("아파트 찾기", onAdd)
         Box(Modifier.fillMaxWidth().padding(vertical = 14.dp), contentAlignment = Alignment.Center) {
             LinkText("키 없이 예시로 둘러보기", onDemo, color = p.sub)
         }
+        // 버튼과 광고 사이는 빈 공간으로 띄운다
+        Spacer(Modifier.weight(1f))
+        BannerAd()
     }
 }
 
