@@ -30,9 +30,7 @@ import java.util.concurrent.TimeUnit
 
 /**
  * 하루 2번(12시간마다) 돌면서
- *  - 새 공시가격 발표
- *  - 같은 동네 새 실거래 신고
- * 를 확인하고 알림을 띄운다. 서버 없이 폰 혼자 동작한다.
+ *  새 공시가격 발표를 확인하고 알림을 띄운다. 서버 없이 폰 혼자 동작한다.
  */
 class CheckWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, params) {
 
@@ -54,7 +52,6 @@ class CheckWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx,
         private const val PERIODIC = "gongsiping-check"
         private const val NOW = "gongsiping-check-now"
         const val CH_PRICE = "price"
-        const val CH_TRADE = "trade"
         const val EXTRA_APT = "aptId"
 
         fun schedule(ctx: Context) {
@@ -78,10 +75,7 @@ class CheckWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx,
                 NotificationChannel(CH_PRICE, "공시가격 발표", NotificationManager.IMPORTANCE_HIGH)
                     .apply { description = "찜한 아파트의 새 공시가격이 나오면 알려줘요" }
             )
-            nm.createNotificationChannel(
-                NotificationChannel(CH_TRADE, "동네 실거래", NotificationManager.IMPORTANCE_DEFAULT)
-                    .apply { description = "같은 동에 새 실거래 신고가 들어오면 알려줘요" }
-            )
+            nm.deleteNotificationChannel("trade") // 예전 버전의 '동네 실거래' 알림 채널 정리
         }
 
         @SuppressLint("MissingPermission")
@@ -91,7 +85,7 @@ class CheckWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx,
                 PackageManager.PERMISSION_GRANTED
             ) return
             createChannels(ctx)
-            val channel = if (a.title.contains("공시가격")) CH_PRICE else CH_TRADE
+            val channel = CH_PRICE
             val intent = Intent(ctx, MainActivity::class.java).apply {
                 putExtra(EXTRA_APT, a.aptId)
                 flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP

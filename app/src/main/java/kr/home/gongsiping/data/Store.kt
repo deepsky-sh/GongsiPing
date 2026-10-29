@@ -86,8 +86,6 @@ object Store {
             }
         })
         put("nearbyUpdated", a.nearbyUpdated)
-        put("seen", JSONArray().apply { a.seenTrades.forEach { put(it) } })
-        put("seeded", a.tradesSeeded)
         put("demo", a.demo)
     }
 
@@ -104,8 +102,6 @@ object Store {
                 )
             }
         } ?: emptyList()
-        val seen = o.optJSONArray("seen")?.let { arr -> (0 until arr.length()).map { arr.getString(it) }.toSet() }
-            ?: emptySet()
         return Apt(
             id = o.getString("id"),
             complexName = o.optString("complexName"),
@@ -125,26 +121,18 @@ object Store {
             prices = prices,
             nearby = nearby,
             nearbyUpdated = o.optLong("nearbyUpdated"),
-            seenTrades = seen,
-            tradesSeeded = o.optBoolean("seeded"),
             demo = o.optBoolean("demo")
         )
     }
 }
 
-/** 사용자 설정 (실거래 키(선택), 알림, 비교 단지 수, 테마) */
+/** 사용자 설정 (알림, 비교 단지 수, 테마) */
 class Prefs(ctx: Context) {
     private val sp = ctx.getSharedPreferences("settings", Context.MODE_PRIVATE)
 
-    var dataKey: String
-        get() = sp.getString("dataKey", "") ?: ""
-        set(v) = sp.edit().putString("dataKey", v.trim()).apply()
     var priceAlert: Boolean
         get() = sp.getBoolean("priceAlert", true)
         set(v) = sp.edit().putBoolean("priceAlert", v).apply()
-    var tradeAlert: Boolean
-        get() = sp.getBoolean("tradeAlert", true)
-        set(v) = sp.edit().putBoolean("tradeAlert", v).apply()
     /** 주변 비교에 쓸 단지 수 */
     var compareCount: Int
         get() = sp.getInt("compareCount", 8)

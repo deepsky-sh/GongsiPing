@@ -1,11 +1,9 @@
 package kr.home.gongsiping.data
 
-import android.util.Xml
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
-import org.xmlpull.v1.XmlPullParser
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
@@ -20,12 +18,8 @@ class ApiException(message: String) : Exception(message)
  *      detail.do        단지의 동 목록 (HTML 의 sel_dong)
  *      getHo.do         동의 호 목록
  *      getPriceYear.do  한 세대의 연도별 공시가격
- *  - 실거래가(선택): 공공데이터포털 국토부 아파트 매매 실거래가. 이 기능만 인증키 필요.
  */
 class Api(private val prefs: Prefs) {
-
-    private val dataKey get() = prefs.dataKey
-    val hasData get() = dataKey.isNotBlank()
 
     // ---------------------------------------------------------------- 공시가격 (키 없음)
 
@@ -174,99 +168,6 @@ class Api(private val prefs: Prefs) {
             return text
         } catch (e: IOException) {
             throw ApiException("인터넷 연결을 확인해주세요")
-        } finally {
-            conn.disconnect()
-        }
-    }
-
-    // ---------------------------------------------------------------- 실거래가 (선택, 키 필요)
-
-    /** 시군구(5자리) + 계약년월(YYYYMM)의 아파트 매매 실거래. Pair(법정동, 거래) */
-    suspend fun trades(lawdCd: String, ym: String): List<Pair<String, Trade>> = withContext(Dispatchers.IO) {
-        if (!hasData) throw ApiException("실거래는 설정에서 공공데이터포털 키를 넣으면 볼 수 있어요")
-        val out = ArrayList<Pair<String, Trade>>()
-        var page = 1
-        while (page <= 5) {
-            val key = if (dataKey.contains("%")) dataKey else URLEncoder.encode(dataKey, "UTF-8")
-            val url = "https://apis.data.go.kr/1613000/RTMSDataSvcAptTrade/getRTMSDataSvcAptTrade" +
-                "?serviceKey=$key&LAWD_CD=$lawdCd&DEAL_YMD=$ym&pageNo=$page&numOfRows=1000"
-            val xml = httpGet(url)
-            val (rows, total) = parseTradeXml(xml)
-            out.addAll(rows)
-            if (rows.size < 1000 || out.size >= total) break
-            page++
-        }
-        out
-    }
-
-    private fun parseTradeXml(xml: String): Pair<List<Pair<String, Trade>>, Int> {
-        val parser = Xml.newPullParser()
-        parser.setInput(xml.reader())
-        val rows = ArrayList<Pair<String, Trade>>()
-        var cur: HashMap<String, String>? = null
-        var tag = ""
-        var total = 0
-        var resultCode = ""
-        var resultMsg = ""
-        var ev = parser.eventType
-        while (ev != XmlPullParser.END_DOCUMENT) {
-            when (ev) {
-                XmlPullParser.START_TAG -> {
-                    tag = parser.name
-                    if (tag == "item") cur = HashMap()
-                }
-                XmlPullParser.TEXT -> {
-                    val t = parser.text?.trim().orEmpty()
-                    if (t.isNotEmpty()) {
-                        val c = cur
-                        if (c != null) c[tag] = t
-                        else when (tag) {
-                            "totalCount" -> total = t.toIntOrNull() ?: 0
-                            "resultCode", "returnReasonCode" -> resultCode = t
-                            "resultMsg", "returnAuthMsg", "errMsg" -> resultMsg = t
-                        }
-                    }
-                }
-                XmlPullParser.END_TAG -> {
-                    if (parser.name == "item") {
-                        cur?.let { m ->
-                            if (m["cdealType"].isNullOrBlank()) { // 해제된 거래는 뺀다
-                                val t = Trade(
-                                    aptName = m["aptNm"].orEmpty(),
-                                    amountManwon = digits(m["dealAmount"].orEmpty()),
-                                    year = m["dealYear"]?.toIntOrNull() ?: 0,
-                                    month = m["dealMonth"]?.toIntOrNull() ?: 0,
-                                    day = m["dealDay"]?.toIntOrNull() ?: 0,
-                                    area = m["excluUseAr"]?.toDoubleOrNull() ?: 0.0,
-                                    floor = m["floor"].orEmpty()
-                                )
-                                if (t.amountManwon > 0) rows.add(m["umdNm"].orEmpty().trim() to t)
-                            }
-                        }
-                        cur = null
-                    }
-                    tag = ""
-                }
-            }
-            ev = parser.next()
-        }
-        if (rows.isEmpty() && resultCode.isNotEmpty() && resultCode != "00" && resultCode != "000") {
-            throw ApiException("실거래가: ${resultMsg.ifBlank { resultCode }}")
-        }
-        return rows to total
-    }
-
-    private fun httpGet(url: String): String {
-        val conn = URL(url).openConnection() as HttpURLConnection
-        try {
-            conn.connectTimeout = 15_000
-            conn.readTimeout = 20_000
-            conn.setRequestProperty("Accept", "application/xml, text/xml, */*")
-            val code = conn.responseCode
-            val stream = if (code in 200..299) conn.inputStream else conn.errorStream
-            val body = stream?.bufferedReader(Charsets.UTF_8)?.use { it.readText() }.orEmpty()
-            if (code !in 200..299) throw IOException("HTTP $code ${body.take(120)}")
-            return body
         } finally {
             conn.disconnect()
         }

@@ -6,7 +6,6 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
-import java.util.Calendar
 import java.util.UUID
 import kotlin.math.abs
 
@@ -111,16 +110,6 @@ class Repo(private val ctx: Context) {
         )
     }
 
-    /** 같은 법정동의 최근 2개월 실거래 (최신순) */
-    suspend fun recentTrades(apt: Apt): List<Trade> {
-        if (apt.demo) return Demo.trades()
-        val out = ArrayList<Trade>()
-        for (ym in recentMonths(2)) {
-            out += api.trades(apt.lawdCode, ym).filter { matchesUmd(it.first, apt.umd) }.map { it.second }
-        }
-        return out.sortedWith(compareByDescending<Trade> { it.year * 10000 + it.month * 100 + it.day })
-    }
-
     /** 최신 공시 일자 확인: 이름 검색 → 안 되면 법정동 목록에서 같은 단지 코드 */
     private suspend fun latestNotice(apt: Apt): String? {
         val byName = try {
@@ -163,15 +152,13 @@ class Repo(private val ctx: Context) {
 
     /**
      * 백그라운드 확인. 새로 생긴 일들을 알림 문구로 돌려준다.
-     *  1) 새 공시가격이 나왔는지 (인증키 없음)
-     *  2) 같은 동네에 새 실거래 신고가 들어왔는지 (공공데이터포털 키가 있을 때만)
+     *  새 공시가격이 나왔는지 (인증키 없음)
      */
     suspend fun checkAll(): List<Alert> {
         Store.reload(ctx)
         lastFailed = false
         val alerts = ArrayList<Alert>()
         val apts = Store.load(ctx).filter { !it.demo && it.usable }
-        val tradeCache = HashMap<String, List<Pair<String, Trade>>>()
 
         for (apt in apts) {
             // 1) 공시가격
@@ -196,38 +183,10 @@ class Repo(private val ctx: Context) {
             } catch (e: Exception) {
                 lastFailed = true
             }
-            // 2) 실거래 신고
-            if (prefs.tradeAlert && api.hasData && apt.lawdCode.isNotEmpty()) try {
-                val found = ArrayList<Trade>()
-                for (ym in recentMonths(2)) {
-                    val k = apt.lawdCode + ym
-                    val list = tradeCache.getOrPut(k) { api.trades(apt.lawdCode, ym) }
-                    found += list.filter { matchesUmd(it.first, apt.umd) }.map { it.second }
-                }
-                val cur = Store.get(ctx, apt.id) ?: apt
-                val fresh = found.filter { it.key !in cur.seenTrades }
-                val seen = (cur.seenTrades + found.map { it.key }).toList().takeLast(600).toSet()
-                Store.update(ctx, apt.id) { it.copy(seenTrades = seen, tradesSeeded = true) }
-                if (cur.tradesSeeded && fresh.isNotEmpty()) {
-                    val top = fresh.maxBy { it.amountManwon }
-                    val title = if (fresh.size == 1) "${apt.umd}에 실거래 신고 1건"
-                    else "${apt.umd}에 새 실거래 ${fresh.size}건"
-                    alerts += Alert(
-                        apt.id,
-                        title,
-                        "${top.aptName} ${Fmt.area(top.area)} ${Fmt.manwon(top.amountManwon)}" +
-                            if (fresh.size > 1) " 외" else ""
-                    )
-                }
-            } catch (e: Exception) {
-                lastFailed = true
-            }
         }
         return alerts
     }
 
-    private fun matchesUmd(tradeUmd: String, aptUmd: String): Boolean =
-        aptUmd.isNotBlank() && (tradeUmd == aptUmd || tradeUmd.endsWith(" $aptUmd") || tradeUmd.startsWith(aptUmd))
 
     companion object {
         fun mergePrices(old: List<YearPrice>, new: List<YearPrice>): List<YearPrice> =
@@ -239,14 +198,6 @@ class Repo(private val ctx: Context) {
             return if (s.size % 2 == 1) s[s.size / 2] else (s[s.size / 2 - 1] + s[s.size / 2]) / 2
         }
 
-        fun recentMonths(n: Int): List<String> {
-            val c = Calendar.getInstance()
-            return (0 until n).map {
-                val s = "%04d%02d".format(c.get(Calendar.YEAR), c.get(Calendar.MONTH) + 1)
-                c.add(Calendar.MONTH, -1)
-                s
-            }
-        }
     }
 }
 

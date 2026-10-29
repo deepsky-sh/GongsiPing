@@ -31,7 +31,6 @@ import kr.home.gongsiping.data.Apt
 import kr.home.gongsiping.data.Fmt
 import kr.home.gongsiping.data.Repo
 import kr.home.gongsiping.data.Store
-import kr.home.gongsiping.data.Trade
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -45,8 +44,6 @@ fun DetailScreen(repo: Repo, apt: Apt, onBack: () -> Unit, onDeleted: () -> Unit
 
     var nearbyBusy by remember { mutableStateOf(false) }
     var nearbyErr by remember { mutableStateOf<String?>(null) }
-    var trades by remember { mutableStateOf<List<Trade>?>(null) }
-    var tradeErr by remember { mutableStateOf<String?>(null) }
     var sortByRate by remember { mutableStateOf(false) }
     var showRename by remember { mutableStateOf(false) }
     var showDelete by remember { mutableStateOf(false) }
@@ -64,7 +61,7 @@ fun DetailScreen(repo: Repo, apt: Apt, onBack: () -> Unit, onDeleted: () -> Unit
     }
 
     LaunchedEffect(apt.id) {
-        // 처음 열 때: 주변 비교가 없거나 7일 지났으면 새로, 실거래는 매번
+        // 처음 열 때: 주변 비교가 없거나 7일 지났으면 새로
         if (!apt.demo && (apt.nearby.isEmpty() || System.currentTimeMillis() - apt.nearbyUpdated > 7 * 86_400_000L)) {
             loadNearby()
         }
@@ -72,12 +69,6 @@ fun DetailScreen(repo: Repo, apt: Apt, onBack: () -> Unit, onDeleted: () -> Unit
         try {
             repo.refreshHistory(apt)
         } catch (e: Exception) {
-        }
-        try {
-            trades = repo.recentTrades(apt)
-        } catch (e: Exception) {
-            tradeErr = e.message ?: "실거래를 못 불러왔어요"
-            trades = emptyList()
         }
     }
 
@@ -180,32 +171,6 @@ fun DetailScreen(repo: Repo, apt: Apt, onBack: () -> Unit, onDeleted: () -> Unit
             Hairline()
         }
 
-        // 04 실거래
-        item {
-            Spacer(Modifier.height(40.dp))
-            SectionHead("04", "${apt.umd.ifBlank { "동네" }} 최근 실거래")
-            when {
-                !apt.demo && !repo.api.hasData -> T("실거래는 선택 기능이에요. 설정에서 공공데이터포털 키를 넣으면 보여드려요. 공시가격은 키 없이 그대로 동작해요.", Type.body, color = p.sub)
-                trades == null -> T("불러오는 중…", Type.body, color = p.sub)
-                tradeErr != null -> T(tradeErr!!, Type.body, color = p.sub)
-                trades!!.isEmpty() -> T("최근 두 달 동안 신고된 거래가 없어요.", Type.body, color = p.sub)
-                else -> T("최근 두 달 · ${trades!!.size}건 · 새 신고가 들어오면 알려드려요", Type.small, color = p.sub)
-            }
-            Spacer(Modifier.height(8.dp))
-        }
-        items((trades ?: emptyList()).take(15)) { t ->
-            val mine = t.aptName.replace(" ", "") == apt.complexName.replace(" ", "")
-            Row(Modifier.fillMaxWidth().padding(vertical = 11.dp), verticalAlignment = Alignment.CenterVertically) {
-                T(t.dateLabel.substring(5), Type.label, Modifier.width(56.dp), color = p.sub)
-                Column(Modifier.weight(1f)) {
-                    if (mine) Marker(t.aptName, Type.bodyBold) else T(t.aptName, Type.bodyBold, maxLines = 1)
-                    T("${Fmt.area(t.area)} · ${t.floor}층", Type.small, color = p.sub)
-                }
-                T(Fmt.manwon(t.amountManwon), Type.bodyBold)
-            }
-            Hairline()
-        }
-
         item {
             Spacer(Modifier.height(48.dp))
             Box(Modifier.fillMaxWidth()) {
@@ -214,7 +179,6 @@ fun DetailScreen(repo: Repo, apt: Apt, onBack: () -> Unit, onDeleted: () -> Unit
                     Spacer(Modifier.height(4.dp))
                     T(
                         "국토교통부 부동산공시가격 알리미 (realtyprice.kr)\n" +
-                            "국토교통부 아파트 매매 실거래가 (공공데이터포털)\n" +
                             "공시가격은 세금 기준 가격이라 실제 시세와 달라요.",
                         Type.small, color = p.sub
                     )

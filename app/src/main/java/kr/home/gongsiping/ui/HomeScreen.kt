@@ -113,7 +113,7 @@ private fun Empty(onAdd: () -> Unit, onDemo: () -> Unit) {
         Row { Marker("찜한 집", Type.mega) }
         T("이 없어요.", Type.mega)
         Spacer(Modifier.height(20.dp))
-        T("아파트 하나 골라두면\n새 공시가격이 뜨는 날 바로 알려줄게요.\n동네에 실거래 신고 들어와도요.", Type.body, color = p.sub)
+        T("아파트 하나 골라두면\n새 공시가격이 뜨는 날 바로 알려줄게요.", Type.body, color = p.sub)
         Spacer(Modifier.height(32.dp))
         InkButton("아파트 찾기", onAdd)
         Box(Modifier.fillMaxWidth().padding(vertical = 14.dp), contentAlignment = Alignment.Center) {
@@ -127,7 +127,7 @@ private fun Empty(onAdd: () -> Unit, onDemo: () -> Unit) {
 
 private fun seasonLine(): String =
     if (CheckWorker.inSeason()) "지금 공시가격 발표 시즌이에요. 하루 두 번 확인하고 있어요."
-    else "공시가격은 보통 4월 말에 나와요. 그 전까진 동네 실거래를 챙겨볼게요."
+    else "공시가격은 보통 4월 말에 나와요. 나오면 바로 알려드릴게요."
 
 private fun checkLine(t: Long, ok: Boolean): String {
     if (t == 0L) return "아직 확인 전"

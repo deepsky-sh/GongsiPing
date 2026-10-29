@@ -107,7 +107,6 @@ class MainActivity : ComponentActivity() {
                             onBack = { screen = Screen.Home },
                             onPicked = { c, dong, ho ->
                                 val apt = repo.addApt(c, dong, ho)
-                                CheckWorker.runNow(applicationContext) // 실거래 기준점 잡기
                                 screen = Screen.Detail(apt.id)
                             }
                         )

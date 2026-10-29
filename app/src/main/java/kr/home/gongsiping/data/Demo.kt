@@ -28,20 +28,8 @@ object Demo {
                 Neighbor("푸른들 1차", "6", 3_870_000, 331_000_000, 450, "하늘동 152", prevPerSqm = 3_800_000)
             ).sortedByDescending { it.perSqm },
             nearbyUpdated = System.currentTimeMillis(),
-            tradesSeeded = true,
             demo = true
         )
     }
 
-    fun trades(): List<Trade> {
-        val c = Calendar.getInstance()
-        val y = c.get(Calendar.YEAR); val m = c.get(Calendar.MONTH) + 1
-        return listOf(
-            Trade("하늘센트럴파크", 92_500, y, m, 21, 84.9, "17"),
-            Trade("예시마을 숲속아파트", 61_000, y, m, 18, 84.97, "9"),
-            Trade("하늘동 한빛2단지", 58_300, y, m, 9, 74.5, "3"),
-            Trade("강변뷰 리버하임", 77_000, y, m, 2, 84.0, "21"),
-            Trade("새솔마을 5단지", 44_800, if (m == 1) y - 1 else y, if (m == 1) 12 else m - 1, 27, 59.9, "12")
-        )
-    }
 }

@@ -32,22 +32,16 @@ fun SettingsScreen(prefs: Prefs, onBack: () -> Unit, onTheme: (Int) -> Unit) {
     val ctx = LocalContext.current
     BackHandler { onBack() }
 
-    var dKey by remember { mutableStateOf(prefs.dataKey) }
     var priceAlert by remember { mutableStateOf(prefs.priceAlert) }
-    var tradeAlert by remember { mutableStateOf(prefs.tradeAlert) }
     var count by remember { mutableStateOf(prefs.compareCount) }
     var theme by remember { mutableStateOf(prefs.themeMode) }
     var checked by remember { mutableStateOf(false) }
-
-    fun saveKeys() {
-        prefs.dataKey = dKey
-    }
 
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp)
     ) {
         Row(Modifier.fillMaxWidth().padding(top = 18.dp, bottom = 8.dp)) {
-            LinkText("← 저장하고 나가기", { saveKeys(); onBack() })
+            LinkText("← 나가기", onBack)
         }
         Spacer(Modifier.height(20.dp))
         T("설정", Type.big)
@@ -55,19 +49,14 @@ fun SettingsScreen(prefs: Prefs, onBack: () -> Unit, onTheme: (Int) -> Unit) {
 
         SectionHead("01", "데이터")
         T("공시가격은 국토부 공시가격 알리미에서 바로 가져와요. 키가 필요 없어요.", Type.body)
-        Spacer(Modifier.height(18.dp))
-        T("(선택) 공공데이터포털 인증키 — 동네 실거래 알림을 받고 싶을 때만", Type.small, color = p.sub)
-        UnderlineField(dKey, { dKey = it }, "data.go.kr 일반 인증키(Decoding)", style = Type.body)
         Spacer(Modifier.height(36.dp))
 
         SectionHead("02", "알림")
         ToggleRow("새 공시가격 나오면", "보통 4월 말 발표", priceAlert) { priceAlert = it; prefs.priceAlert = it }
         Hairline()
-        ToggleRow("우리 동네 실거래 신고", "같은 법정동 · 위 키를 넣었을 때만", tradeAlert) { tradeAlert = it; prefs.tradeAlert = it }
-        Hairline()
         Spacer(Modifier.height(14.dp))
         InkButton(if (checked) "확인 요청했어요 · 잠시 후 알림" else "지금 바로 확인하기", {
-            saveKeys(); CheckWorker.runNow(ctx); checked = true
+            CheckWorker.runNow(ctx); checked = true
         })
         Spacer(Modifier.height(36.dp))
 

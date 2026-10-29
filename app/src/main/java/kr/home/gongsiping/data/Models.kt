@@ -18,20 +18,6 @@ data class Neighbor(
         get() = if (prevPerSqm > 0) (perSqm - prevPerSqm) * 100.0 / prevPerSqm else Double.NaN
 }
 
-/** 실거래 1건 */
-data class Trade(
-    val aptName: String,
-    val amountManwon: Long, // 거래금액(만원)
-    val year: Int,
-    val month: Int,
-    val day: Int,
-    val area: Double,
-    val floor: String
-) {
-    val key: String get() = "$aptName|$year-$month-$day|$amountManwon|$floor|$area"
-    val dateLabel: String get() = "%d.%02d.%02d".format(year, month, day)
-}
-
 /** 내가 찜한 아파트 한 세대 */
 data class Apt(
     val id: String,
@@ -40,7 +26,7 @@ data class Apt(
     val address: String,      // 지번 주소
     val aptCode: String,      // 공시가격알리미 단지 코드
     val noticeDate: String,   // 마지막으로 확인한 공시 일자 (YYYYMMDD)
-    val regCode: String,      // 시군구 코드 5자리 (실거래 조회에도 사용)
+    val regCode: String,      // 시군구 코드 5자리
     val eubCode: String,      // 읍면동 코드 5자리
     val bun: Int,             // 지번 본번 (주변 단지 정렬용)
     val umd: String,          // 법정동 이름 (예: 일산동)
@@ -52,8 +38,6 @@ data class Apt(
     val prices: List<YearPrice> = emptyList(),
     val nearby: List<Neighbor> = emptyList(),
     val nearbyUpdated: Long = 0L,
-    val seenTrades: Set<String> = emptySet(),
-    val tradesSeeded: Boolean = false,
     val demo: Boolean = false
 ) {
     val title: String get() = nickname.ifBlank { complexName }
@@ -68,7 +52,6 @@ data class Apt(
         if (p.price <= 0) return Double.NaN
         return (l.price - p.price) * 100.0 / p.price
     }
-    val lawdCode: String get() = regCode
     val usable: Boolean get() = aptCode.isNotBlank() && noticeDate.isNotBlank()
 }
 
